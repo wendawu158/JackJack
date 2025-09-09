@@ -15,7 +15,7 @@ Blackjack is a card game where you, the player, play against the dealer.
 
 The game begins with you putting down your "stake".
 
-The dealer then deals two cards to you, and two cards to themself. One of the dealer cards is dealt face down, all others are dealt face up.
+The dealer then deals two cards to you, and two cards to themself from the shoe[^1]. One of the dealer cards is dealt face down, all others are dealt face up.
 
 A hand's total is calculated by adding up the values on the card. Face cards count as ten.
 
@@ -25,7 +25,7 @@ The goal is to have a higher hand total than the dealer, while having your hand 
 
 ## Your Turn
 
-On your turn, you may either "hit", "stand", "double", "split", or "surrender"[^1].
+On your turn, you may either "hit", "stand", "double", "split", or "surrender"[^2].
 
 If you hit, the dealer gives you another card, and that card's value is added to your hand's total.
 
@@ -75,5 +75,28 @@ If you have the same hand total, you draw, and your stake is returned to you.
 
 Otherwise, you win, and your stake is doubled.
 
-[^1]:Surrendering is not allowed in some casinos
+# Strategy
+
+So, given this information, it should be pretty easy to create a strategy where we have an edge.
+
+Why? Because we know exactly where each card is in the game. If we start at the beginning of a shoe and play either heads-up[^3] or single-player, we know exactly which cards are discarded, in play, or in the shoe.
+
+Therefore, using this information, we can calculate the expected values for hitting or standing.
+
+The expected value of standing is very simple to calculate. Assuming the dealer does not already have blackjack (or ignoring blackjack as a possiblity entirely), we can calculate the probability of any run happening.
+
+Consider, the dealer must:
+* Draw to 17+, and draw if they have a soft 17
+* Stand on 18 or over
+
+There are three possible outcomes to this
+1. The dealer loses because they go bust/have a worse hand than us
+2. The dealer draws with us because they have an equally good hand to us
+3. The dealer wins because they have a better hand than us.
+
+
+
+[^1]:The thing holding the cards.
+[^2]:Surrendering is not allowed in some casinos.
+[^3]:All cards held by players being laid face-up. Most casinos play heads-up.
 
