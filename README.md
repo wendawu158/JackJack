@@ -75,13 +75,31 @@ If you have the same hand total, you draw, and your stake is returned to you.
 
 Otherwise, you win, and your stake is doubled.
 
+## Assumptions
+
+We can always double, no matter what the cards on the table are.
+
+Splitting is always allowed for pairs
+
+Late surrender, i.e. surrender is given after dealer checks for blackjack.
+
+Dealer hits on soft 17
+
+1:1 payout for wins
+
+3:2 payout for blackjack
+
+Push for both blackjack
+
 # Strategy
 
 So, given this information, it should be pretty easy to create a strategy where we have an edge.
-
+ 
 Why? Because we know exactly where each card is in the game. If we start at the beginning of a shoe and play either heads-up[^3] or single-player, we know exactly which cards are discarded, in play, or in the shoe.
 
-Therefore, using this information, we can calculate the expected values for hitting or standing.
+Therefore, using this information, we can calculate the expected values for hitting, standing, doubling, splitting, or surrendering.
+
+## Standing
 
 The expected value of standing is very simple to calculate. Assuming the dealer does not already have blackjack (or ignoring blackjack as a possiblity entirely), we can calculate the probability of any run happening.
 
@@ -94,7 +112,33 @@ There are three possible outcomes to this
 2. The dealer draws with us because they have an equally good hand to us
 3. The dealer wins because they have a better hand than us.
 
+Therefore, for any given situation, we know exactly what the expected value of standing is.
 
+## Doubling
+
+Given that when we double, we only get one more card, and then our turn is over, it is trivial to simply run the same algorithm for standing on each possible card that we could draw, and simply running the standing EV function for every possible hand we could get. Obviously, we would have to weigh the hands that we get from doubling, but it should still be trivial to figure out.
+
+## Surrendering
+
+The easiest one to figure out. Always returns -0.5 EV
+
+## Hitting
+
+This is a bit trickier. In order to figure out if hitting is "worth it", we need to take into account that the player may hit multiple times. 
+
+This could be simplified by forcing the bot to hit in all positions where we could not go bust. However, it still leaves the difficult position of determining when it is worth it to risk busting.
+
+If we listen to basic strategy, we should hit on any hand lower than a 17 whenever the dealer shows a 7 or higher, and stand otherwise. However, this may not always be the best move.
+
+For example, consider a deck which has an extremely low count would favour potentially hitting on hands that are 17 or larger, and a deck with an extremely high count would favour not hitting on hands between 12 and 16, defending on how high the count is.
+
+Therefore, how should we value the possible outcomes?
+
+What we could do is calculate the branching probabilities of hitting. Every time we hit above 21, if we do not bust, we have improved our hand and increased our total. However, any hand that is below 17 is treated the same when it comes to the showdown between the player and the dealer.
+
+In order to save on memory, we could also do the same thing that we do for calculating the EV of standing, by ignoring hands once we see that they have busted.
+
+What we could do is run a similar algorithm, keeping track of all the hands, but this time we'll only stop if they bust.
 
 [^1]:The thing holding the cards.
 [^2]:Surrendering is not allowed in some casinos.
