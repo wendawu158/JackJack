@@ -126,19 +126,24 @@ The easiest one to figure out. Always returns -0.5 EV
 
 This is a bit trickier. In order to figure out if hitting is "worth it", we need to take into account that the player may hit multiple times. 
 
-This could be simplified by forcing the bot to hit in all positions where we could not go bust. However, it still leaves the difficult position of determining when it is worth it to risk busting.
+However, if they stand, they stop hitting. They also can no longer hit if they go bust
 
-If we listen to basic strategy, we should hit on any hand lower than a 17 whenever the dealer shows a 7 or higher, and stand otherwise. However, this may not always be the best move.
+What we could do, is calculate every possible hand, including busts. Then, we can calculate the EV of standing at any given point in time, with an EV of -1 being attributed to all busts.
 
-For example, consider a deck which has an extremely low count would favour potentially hitting on hands that are 17 or larger, and a deck with an extremely high count would favour not hitting on hands between 12 and 16, defending on how high the count is.
+Consider. We have calculated every possible hand that the player can see. Obviously, for the last Hashmap with the longest possible hands, all the hands have an EV of -1, as they are hands that are bust hands.
 
-Therefore, how should we value the possible outcomes?
+However, if we move backwards in the ArrayList to the previous Hashmap, we can see that the hands that lead to the bust hands cannot be bust hands themselves.
 
-What we could do is calculate the branching probabilities of hitting. Every time we hit above 21, if we do not bust, we have improved our hand and increased our total. However, any hand that is below 17 is treated the same when it comes to the showdown between the player and the dealer.
+However, if we move backwards in the ArrayList to the previous previous HashMap, and consider all the "sibling hands" to the hands that lead to the bust hands, some of them will be bust hands themselves.
 
-In order to save on memory, we could also do the same thing that we do for calculating the EV of standing, by ignoring hands once we see that they have busted.
+Therefore, in order to calculate the EV of hitting, we take the EV of all the consequential hands, and weigh them based on the probability of getting those hands. That is the EV of hitting.
 
-What we could do is run a similar algorithm, keeping track of all the hands, but this time we'll only stop if they bust.
+The EV of a hand is always the higher of the EV of standing and the EV of hitting, and the EV of a hand that is bust is always -1
+
+Using such an algorithm, we should be able to calculate the EV of the current hand, and also play accordingly.
+
+However, this is likely to have a very high time complexity, as we have to recusively go through every card in the deck, create every hand, evaluate every hand, and compare the "child hands" of every hand.
+
 
 [^1]:The thing holding the cards.
 [^2]:Surrendering is not allowed in some casinos.
