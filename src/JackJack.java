@@ -15,13 +15,18 @@ public class JackJack {
     // How likely is the next card to bust us
 
     public static double bustProbability(ArrayList<Character> seenCardsArray, int deckSize, player p) {
+        return bustProbability(seenCardsArray, deckSize, p.handValue);
+    }
+
+
+    public static double bustProbability(ArrayList<Character> seenCardsArray, int deckSize, int handValue) {
 
         // The unseen cards (i.e. the cards remaining in the deck)
         HashMap<Character, Integer> unseenCards = getUnseenCards(seenCardsArray, deckSize);
         int cardsUnseen = deckSize * 52 - seenCardsArray.size();
 
         // What is the smallest card that will bust the hand
-        int bustMinimum = 21 - p.handValue;
+        int bustMinimum = 21 - handValue;
 
         // How many of the remaining cards will bust the hand
         int bustCards = 0;
@@ -40,18 +45,90 @@ public class JackJack {
         return bustProbability;
     }
 
+    // Expected value of hitting, then standing
+
+    public static ArrayList<HashMap<String, Integer>> hitEV(ArrayList<Character> seenCardsArray, int deckSize, player p, player d) {
+        return hitEV(seenCardsArray, deckSize, p.hand, d.hand);
+    }
+
+    public static ArrayList<HashMap<String, Integer>> hitEV(ArrayList<Character> seenCardsArray, int deckSize, ArrayList<Character> playerHand, ArrayList<Character> dealerHand) {
+
+        // The unseen cards
+        HashMap<Character, Integer> unseenCards = getUnseenCards(seenCardsArray, deckSize);
+
+        // We count the player cards as unseen, for simplicity
+        for (char i: playerHand) {
+            unseenCards.put(i, unseenCards.get(i) + 1);
+        }
+
+        // The possible runouts
+        ArrayList<HashMap<String, Integer>> playerRunouts = new ArrayList<>();
+
+        // A storage variable. How many cards are left?
+        HashMap<Character,Integer> unseenStorage;
+
+        // The run being used
+        String run;
+
+        // Adding the first hand
+        playerRunouts.add(new HashMap<>());
+        playerRunouts.get(0).put(dicts.ArrayListToString(playerHand), 1);
+
+        // Are all hands in the current iteration bust?
+        boolean allBust = false;
+
+        for (int i = 0; !allBust; i++) {
+
+            playerRunouts.add(new HashMap<>());
+            allBust = true;
+
+            for (String runRoot: playerRunouts.get(i).keySet()) {
+
+                if (dicts.handToValue(runRoot) >= 21) {
+                    continue;
+                } else {
+                    allBust = false;
+                }
+
+                for (char card: unseenCards.keySet()) {
+
+                    // Resetting our variables
+                    unseenStorage = new HashMap<>(unseenCards);
+
+                    for (char handCard: runRoot.toCharArray()) {
+                        unseenStorage.put(handCard, unseenStorage.get(handCard) - 1);
+                    }
+
+                    if (unseenStorage.get(card) == 0) {
+                        break;
+                    }
+
+                    run = runRoot + card;
+
+                    playerRunouts.get(i + 1).put(run, unseenStorage.get(card));
+                }
+            }
+
+        }
+
+        return playerRunouts;
+
+    }
 
     // Expected value of standing
-
     public static double standEV(ArrayList<Character> seenCardsArray, int deckSize, player p, player d) {
+        return standEV(seenCardsArray, deckSize, p.hand, dealer.play.hand);
+    }
+
+    public static double standEV(ArrayList<Character> seenCardsArray, int deckSize, ArrayList<Character> playerHand, ArrayList<Character> dealerHand) {
+
 
         // The unseen cards (i.e. the cards remaining in the deck)
         HashMap<Character, Integer> unseenCards = getUnseenCards(seenCardsArray, deckSize);
-        unseenCards.put(d.hand.get(0), unseenCards.get(d.hand.get(0)) + 1);
-        int cardsUnseen = deckSize * 52 - seenCardsArray.size();
+        unseenCards.put(dealerHand.get(0), unseenCards.get(dealerHand.get(0)) + 1);
 
         // The total of the player's hand
-        int playerTotal = p.getHandValue();
+        int playerTotal = dicts.handToValue(playerHand);
 
         // The runouts where the dealer could keep going
         ArrayList<HashMap<String, Integer>> dealerRunouts = new ArrayList<>();
@@ -79,7 +156,7 @@ public class JackJack {
 
         // The initial card being added
         dealerRunouts.add(new HashMap<>());
-        dealerRunouts.get(0).put(String.valueOf(d.hand.get(0)), 1);
+        dealerRunouts.get(0).put(String.valueOf(dealerHand.get(0)), 1);
 
         // Adding an empty HashMap so they match
         dealerFinalHands.add(new HashMap<>());
@@ -175,7 +252,7 @@ public class JackJack {
 
         int handTotal;
         boolean softHand = false;
-        int currentLengthDenominator = 0;
+        int currentLengthDenominator;
         double continuingFraction = 1.0;
 
         // Loops through every hand
@@ -203,11 +280,11 @@ public class JackJack {
                     handTotal += 10;
                 }
 
-                if (handTotal > 21 || handTotal < p.getHandValue()) {
+                if (handTotal > 21 || handTotal < playerTotal) {
                     dealerLose += ((double) hands.get(hand) / currentLengthDenominator) * continuingFraction;
-                } else if (handTotal == p.getHandValue()) {
+                } else if (handTotal == playerTotal) {
                     dealerDraw += ((double) hands.get(hand) / currentLengthDenominator) * continuingFraction;
-                } else if (handTotal > p.getHandValue()) {
+                } else if (handTotal > playerTotal) {
                     dealerWin += ((double) hands.get(hand) / currentLengthDenominator) * continuingFraction;
                 } else {
                     System.out.println("ERROR");

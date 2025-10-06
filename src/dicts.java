@@ -1,3 +1,5 @@
+import jdk.dynalink.beans.StaticClass;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -36,6 +38,52 @@ public class dicts {
         cardCount.put('4', 0);
         cardCount.put('3', 0);
         cardCount.put('2', 0);
+    }
+
+    public static int handToValue(ArrayList<Character> hand) {
+        int handValue = 0;
+        boolean acePresent = false;
+
+        for (char card: hand) {
+            handValue += dicts.cardToValue(card);
+            if (card == 'A') {
+                acePresent = true;
+            }
+        }
+
+        if (acePresent && handValue <= 11) {
+            handValue += 10;
+        }
+
+        return handValue;
+    }
+
+    public static String ArrayListToString(ArrayList a) {
+        StringBuilder st = new StringBuilder();
+
+        for (Object i: a) {
+            st.append(i.toString());
+        }
+
+        return st.toString();
+    }
+
+    public static int handToValue(String hand) {
+        int handValue = 0;
+        boolean acePresent = false;
+
+        for (char card: hand.toCharArray()) {
+            handValue += dicts.cardToValue(card);
+            if (card == 'A') {
+                acePresent = true;
+            }
+        }
+
+        if (acePresent && handValue <= 11) {
+            handValue += 10;
+        }
+
+        return handValue;
     }
 
     public static final ArrayList<Character> SINGLE_DECK = new ArrayList<>(Arrays.asList(

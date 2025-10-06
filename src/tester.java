@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class tester {
 
@@ -16,12 +17,16 @@ public class tester {
         seenCards.add(player1.hit());
         seenCards.add(player1.hit());
         seenCards.add(dealer.play.hit());
-
         System.out.println(player1.hand);
         System.out.println(dealer.play.hand);
         System.out.println(seenCards);
         System.out.println(dealer.getDeck());
+
         JackJack.standEV(seenCards, 1, player1, dealer.play);
+
+        for (HashMap<String, Integer> i: JackJack.hitEV(seenCards, 1, player1, dealer.play)) {
+            System.out.println(i);
+        }
     }
 
 }
